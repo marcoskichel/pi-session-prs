@@ -8,7 +8,7 @@ before you push it.
 
 - `npm run check` — types and lint.
 - `npm test` — unit tests.
-- `npm run dev` — load this checkout in pi. `npm run dev -- --off` restores.
+- `npm run dev` — run pi with this checkout loaded. Never edits settings.json.
 
 ## Rules
 
