@@ -1,0 +1,47 @@
+{
+  "name": "pi-session-prs",
+  "version": "0.0.0",
+  "description": "Pi extension that shows the GitHub PRs of the current session in the footer, grouped by state, with /prs to open one in the browser.",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-extension",
+    "coding-agent",
+    "github",
+    "pull-requests"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcoskichel/pi-session-prs.git"
+  },
+  "files": [
+    "index.ts",
+    "core.ts",
+    "dev.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "tsc && biome check",
+    "dev": "node dev.ts",
+    "test": "node --test",
+    "fix": "biome check --write"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.10",
+    "@earendil-works/pi-coding-agent": "^0.84.0",
+    "@earendil-works/pi-tui": "^0.84.0",
+    "typescript": "^5.9.0"
+  },
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
