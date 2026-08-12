@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { candidates, format, type Prs, type State } from "./core.ts";
+import {
+	candidates,
+	checkLabel,
+	checks,
+	format,
+	type Prs,
+	type State,
+} from "./core.ts";
 
 const url = (n: number) =>
 	`https://github.com/ExodusMovement/qa-agents/pull/${n}`;
@@ -13,6 +20,54 @@ function make(entries: [number, State][]): Prs {
 		prs.set(url(n), { number: n, title: `pr ${n}`, state });
 	return prs;
 }
+
+test("checks sorts failures first, then running, and survives junk", () => {
+	const json = JSON.stringify([
+		{ name: "lint", bucket: "pass" },
+		{ name: "e2e", bucket: "pending" },
+		{ name: "build", bucket: "fail" },
+		{ name: "docs", bucket: "skipping" },
+		{ bucket: "fail" },
+	]);
+	assert.deepEqual(
+		checks(json).map((c) => c.name),
+		["build", "e2e", "lint", "docs"],
+	);
+	assert.deepEqual(checks("not json"), []);
+});
+
+test("checkLabel shows outcome, workflow, duration and failure reason", () => {
+	assert.equal(
+		checkLabel({
+			name: "build",
+			workflow: "CI",
+			bucket: "fail",
+			state: "FAILURE",
+			link: "https://github.com/o/r/actions/runs/1",
+			description: "exit code 1",
+			startedAt: "2024-01-01T00:00:00Z",
+			completedAt: "2024-01-01T00:01:12Z",
+		}),
+		"✕ build (CI) — failure · 1m12s · exit code 1",
+	);
+});
+
+test("checkLabel times a running check against now", () => {
+	assert.equal(
+		checkLabel(
+			{
+				name: "e2e",
+				workflow: "e2e",
+				bucket: "pending",
+				state: "IN_PROGRESS",
+				link: "https://github.com/o/r/actions/runs/2",
+				startedAt: "2024-01-01T00:00:00Z",
+			},
+			Date.parse("2024-01-01T00:00:30Z"),
+		),
+		"● e2e — in_progress · 30s",
+	);
+});
 
 test("candidates dedupes pull urls and ignores other paths", () => {
 	assert.deepEqual(candidates(`opened ${url(604)} and ${url(604)} again`), [

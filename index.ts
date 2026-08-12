@@ -15,7 +15,10 @@ import { hyperlink } from "@earendil-works/pi-tui";
 
 import {
 	candidates,
+	checkLabel,
+	checks,
 	format,
+	type Pr,
 	type Prs,
 	STYLE,
 	type State,
@@ -140,24 +143,64 @@ export default function (pi: ExtensionAPI) {
 		if ((await refreshStates(ctx)) || found) render(ctx);
 	});
 
+	const open = (url: string) =>
+		pi.exec("open", [url], { timeout: GH_TIMEOUT_MS }).catch(() => {});
+
+	/** Shared by /prs and /pr-checks; skips the dialog when there is nothing to choose. */
+	const pickPr = async (
+		ctx: ExtensionContext,
+		title: string,
+	): Promise<[string, Pr] | undefined> => {
+		statesCheckedAt = 0;
+		if (await refreshStates(ctx)) render(ctx);
+		const all = sorted(prs);
+		if (all.length === 0) {
+			ctx.ui.notify("No PRs in this session", "info");
+			return undefined;
+		}
+		if (all.length === 1) return all[0];
+		const labels = all.map(
+			([, pr]) => `${STYLE[pr.state].icon} #${pr.number} ${pr.title}`,
+		);
+		const picked = await ctx.ui.select(title, labels);
+		return picked ? all[labels.indexOf(picked)] : undefined;
+	};
+
 	pi.registerCommand("prs", {
 		description: "Open a PR from this session in the browser",
 		handler: async (_args, ctx) => {
-			statesCheckedAt = 0;
-			if (await refreshStates(ctx)) render(ctx);
-			const all = sorted(prs);
-			if (all.length === 0)
-				return ctx.ui.notify("No PRs in this session", "info");
-			const labels = all.map(
-				([, pr]) => `${STYLE[pr.state].icon} #${pr.number} ${pr.title}`,
-			);
-			const picked = await ctx.ui.select("Open PR", labels);
-			const entry = picked ? all[labels.indexOf(picked)] : undefined;
-			if (entry) {
-				await pi
-					.exec("open", [entry[0]], { timeout: GH_TIMEOUT_MS })
-					.catch(() => {});
-			}
+			const entry = await pickPr(ctx, "Open PR");
+			if (entry) await open(entry[0]);
+		},
+	});
+
+	pi.registerCommand("pr-checks", {
+		description: "List the latest workflow runs of a PR and open one",
+		handler: async (_args, ctx) => {
+			const entry = await pickPr(ctx, "Checks for PR");
+			if (!entry) return;
+			const [url, pr] = entry;
+			/** Non-zero is normal here: 8 means pending, 1 means a check failed. */
+			const res = await pi
+				.exec(
+					"gh",
+					[
+						"pr",
+						"checks",
+						url,
+						"--json",
+						"name,state,bucket,link,workflow,description,startedAt,completedAt",
+					],
+					{ cwd: ctx.cwd, timeout: GH_TIMEOUT_MS },
+				)
+				.catch(() => undefined);
+			const runs = checks(res?.stdout ?? "");
+			if (runs.length === 0)
+				return ctx.ui.notify(`No checks on #${pr.number}`, "info");
+			const labels = runs.map((c) => checkLabel(c));
+			const picked = await ctx.ui.select(`Checks #${pr.number}`, labels);
+			const run = picked ? runs[labels.indexOf(picked)] : undefined;
+			if (run?.link) await open(run.link);
 		},
 	});
 }
