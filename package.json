@@ -1,6 +1,6 @@
 {
   "name": "pi-session-prs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Pi extension that shows the GitHub PRs of the current session in the footer, grouped by state, with /prs to open one in the browser.",
   "keywords": [
     "pi-package",

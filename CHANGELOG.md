@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/marcoskichel/pi-session-prs/compare/pi-session-prs-v1.0.0...pi-session-prs-v1.1.0) (2026-08-12)
+
+
+### Features
+
+* /pr-checks picker for a PR's latest workflow runs ([#4](https://github.com/marcoskichel/pi-session-prs/issues/4)) ([243820e](https://github.com/marcoskichel/pi-session-prs/commit/243820e26ba7dc2ca98edaa86f1a99f4a53ffb40))
+
+
+### Bug Fixes
+
+* run pi with --extension instead of rewriting settings.json ([#2](https://github.com/marcoskichel/pi-session-prs/issues/2)) ([5288a4f](https://github.com/marcoskichel/pi-session-prs/commit/5288a4f047666347d5c0221c9fe3f636499e886f))
+
 ## 1.0.0 (2026-08-11)
 
 
