@@ -22,6 +22,7 @@ Or add a local checkout to `~/.pi/agent/settings.json`:
 
 - The footer shows `PR ● #604 #612 ✔ #598 ✕ #590`, up to 5 entries plus a `+n` overflow count.
 - `/prs` — pick a PR from this session and open it in the browser.
+- `/pr-checks` — list the latest workflow runs of a PR (outcome, workflow, duration, failure reason; failures first) and open one in the browser. The PR dialog is skipped when the session has only one PR.
 
 ## Requirements
 

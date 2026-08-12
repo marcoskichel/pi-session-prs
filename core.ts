@@ -22,6 +22,71 @@ export const STYLE: Record<State, { icon: string; color: Color }> = {
 	CLOSED: { icon: "✕", color: "error" },
 };
 
+/** One row of `gh pr checks --json ...` — a workflow job on the PR's head commit. */
+export interface Check {
+	name: string;
+	state: string;
+	bucket: string;
+	link: string;
+	workflow?: string;
+	description?: string;
+	startedAt?: string;
+	completedAt?: string;
+}
+
+/** Failures first: that is the only reason anyone opens this picker. */
+const BUCKETS = ["fail", "pending", "pass", "cancel", "skipping"];
+const BUCKET_ICON: Record<string, string> = {
+	fail: "✕",
+	pending: "●",
+	pass: "✔",
+	cancel: "⊘",
+	skipping: "○",
+};
+
+function duration(from?: string, to?: string): string {
+	const start = from ? Date.parse(from) : Number.NaN;
+	const end = to ? Date.parse(to) : Number.NaN;
+	if (Number.isNaN(start) || Number.isNaN(end) || end < start) return "";
+	const s = Math.round((end - start) / 1000);
+	return s < 60
+		? `${s}s`
+		: `${Math.floor(s / 60)}m${String(s % 60).padStart(2, "0")}s`;
+}
+
+/** Sorted so the picker reads top-down: broken, running, then the boring ones. */
+export function checks(stdout: string): Check[] {
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(stdout);
+	} catch {
+		return [];
+	}
+	if (!Array.isArray(parsed)) return [];
+	return (parsed as Check[])
+		.filter((c) => c?.name)
+		.sort(
+			(a, b) =>
+				BUCKETS.indexOf(a.bucket) - BUCKETS.indexOf(b.bucket) ||
+				a.name.localeCompare(b.name),
+		);
+}
+
+/** Everything worth knowing before pressing enter: outcome, job, workflow, time, error. */
+export function checkLabel(c: Check, now: number = Date.now()): string {
+	const icon = BUCKET_ICON[c.bucket] ?? "·";
+	const workflow =
+		c.workflow && c.workflow !== c.name ? ` (${c.workflow})` : "";
+	const took =
+		duration(c.startedAt, c.completedAt) ||
+		(c.bucket === "pending"
+			? duration(c.startedAt, new Date(now).toISOString())
+			: "");
+	const state = c.state ? c.state.toLowerCase() : c.bucket;
+	const tail = [state, took, c.description].filter(Boolean).join(" · ");
+	return `${icon} ${c.name}${workflow} — ${tail}`;
+}
+
 export function candidates(text: string): string[] {
 	return [...new Set(text.match(PR_URL) ?? [])];
 }
