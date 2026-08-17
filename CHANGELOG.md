@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/marcoskichel/pi-session-prs/compare/pi-session-prs-v1.1.0...pi-session-prs-v1.1.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* republish to restore npm search indexing ([#6](https://github.com/marcoskichel/pi-session-prs/issues/6)) ([b7c99e9](https://github.com/marcoskichel/pi-session-prs/commit/b7c99e9d4bf9cefaef33ce1aa9a61395a6328e6f))
+
 ## [1.1.0](https://github.com/marcoskichel/pi-session-prs/compare/pi-session-prs-v1.0.0...pi-session-prs-v1.1.0) (2026-08-12)
 
 
