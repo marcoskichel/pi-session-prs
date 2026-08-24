@@ -92,13 +92,19 @@ export default function (pi: ExtensionAPI) {
 	const refreshStates = async (ctx: ExtensionContext) => {
 		if (Date.now() - statesCheckedAt < STATE_TTL_MS) return false;
 		statesCheckedAt = Date.now();
+		const found = await Promise.all(
+			[...prs].map(async ([url, known]) => {
+				const pr = await lookup(ctx, url);
+				return pr && pr.state !== known.state
+					? ([url, pr] as const)
+					: undefined;
+			}),
+		);
 		let changed = false;
-		for (const [url, known] of prs) {
-			const pr = await lookup(ctx, url);
-			if (pr && pr.state !== known.state) {
-				prs.set(url, pr);
-				changed = true;
-			}
+		for (const entry of found) {
+			if (!entry) continue;
+			prs.set(entry[0], entry[1]);
+			changed = true;
 		}
 		return changed;
 	};
@@ -151,7 +157,8 @@ export default function (pi: ExtensionAPI) {
 		ctx: ExtensionContext,
 		title: string,
 	): Promise<[string, Pr] | undefined> => {
-		statesCheckedAt = 0;
+		/** No forced refresh: agent_settled already polls, and a blocking `gh pr view`
+		 * per tracked PR delayed the picker by seconds. */
 		if (await refreshStates(ctx)) render(ctx);
 		const all = sorted(prs);
 		if (all.length === 0) {
