@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/marcoskichel/pi-session-prs/compare/pi-session-prs-v1.1.1...pi-session-prs-v1.1.2) (2026-08-24)
+
+
+### Bug Fixes
+
+* stop blocking /prs on a full PR state refresh ([#8](https://github.com/marcoskichel/pi-session-prs/issues/8)) ([fc248d4](https://github.com/marcoskichel/pi-session-prs/commit/fc248d468e3eae95bf72c867d976ad3449372408))
+
 ## [1.1.1](https://github.com/marcoskichel/pi-session-prs/compare/pi-session-prs-v1.1.0...pi-session-prs-v1.1.1) (2026-08-17)
 
 
