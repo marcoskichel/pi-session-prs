@@ -91,10 +91,20 @@ export function candidates(text: string): string[] {
 	return [...new Set(text.match(PR_URL) ?? [])];
 }
 
+export function repo(url: string): string {
+	return url.split("/")[4] ?? "";
+}
+
+/** `repo#123`, so PRs from different repos in one session stay distinguishable. */
+export function label(url: string, pr: Pr): string {
+	return `${repo(url)}#${pr.number}`;
+}
+
 export function sorted(prs: Prs): [string, Pr][] {
 	return [...prs].sort(
 		(a, b) =>
 			STATES.indexOf(a[1].state) - STATES.indexOf(b[1].state) ||
+			repo(a[0]).localeCompare(repo(b[0])) ||
 			a[1].number - b[1].number,
 	);
 }
@@ -113,7 +123,7 @@ export function format(
 		const members = shown.filter(([, pr]) => pr.state === state);
 		if (members.length === 0) return "";
 		const links = members
-			.map(([url, pr]) => link(`#${pr.number}`, url))
+			.map(([url, pr]) => link(label(url, pr), url))
 			.join(" ");
 		return paint(STYLE[state].color, `${STYLE[state].icon} ${links}`);
 	}).filter(Boolean);

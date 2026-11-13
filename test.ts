@@ -90,7 +90,10 @@ test("format groups by state, open first, ascending inside a group", () => {
 		[612, "OPEN"],
 		[604, "OPEN"],
 	]);
-	assert.equal(format(prs, plain), "PR ● #604 #612 ✔ #598 ✕ #590");
+	assert.equal(
+		format(prs, plain),
+		"PR ● qa-agents#604 qa-agents#612 ✔ qa-agents#598 ✕ qa-agents#590",
+	);
 });
 
 test("format drops the least interesting states on overflow and counts the rest", () => {
@@ -102,7 +105,10 @@ test("format drops the least interesting states on overflow and counts the rest"
 		[700, "CLOSED"],
 		[701, "CLOSED"],
 	]);
-	assert.equal(format(prs, plain), "PR ● #604 #612 ✔ #598 ✕ #590 #700 +1");
+	assert.equal(
+		format(prs, plain),
+		"PR ● qa-agents#604 qa-agents#612 ✔ qa-agents#598 ✕ qa-agents#590 qa-agents#700 +1",
+	);
 });
 
 test("paint wraps each state group, never the whole line", () => {
@@ -113,6 +119,28 @@ test("paint wraps each state group, never the whole line", () => {
 	]);
 	assert.equal(
 		format(prs, plain, (color, t) => `<${color}>${t}</>`),
-		"PR <success>● #604</> <accent>✔ #598</> <error>✕ #590</>",
+		"PR <success>● qa-agents#604</> <accent>✔ qa-agents#598</> <error>✕ qa-agents#590</>",
 	);
+});
+
+test("format names the repo of each PR and groups repos inside a state", () => {
+	const prs: Prs = new Map([
+		[
+			"https://github.com/o/web/pull/3",
+			{ number: 3, title: "", state: "OPEN" },
+		],
+		[
+			"https://github.com/o/api/pull/9",
+			{ number: 9, title: "", state: "OPEN" },
+		],
+		[
+			"https://github.com/o/web/pull/1",
+			{ number: 1, title: "", state: "OPEN" },
+		],
+		[
+			"https://github.com/o/api/pull/2",
+			{ number: 2, title: "", state: "MERGED" },
+		],
+	]);
+	assert.equal(format(prs, plain), "PR ● api#9 web#1 web#3 ✔ api#2");
 });
