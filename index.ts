@@ -18,6 +18,7 @@ import {
 	checkLabel,
 	checks,
 	format,
+	label,
 	type Pr,
 	type Prs,
 	STYLE,
@@ -167,7 +168,7 @@ export default function (pi: ExtensionAPI) {
 		}
 		if (all.length === 1) return all[0];
 		const labels = all.map(
-			([, pr]) => `${STYLE[pr.state].icon} #${pr.number} ${pr.title}`,
+			([url, pr]) => `${STYLE[pr.state].icon} ${label(url, pr)} ${pr.title}`,
 		);
 		const picked = await ctx.ui.select(title, labels);
 		return picked ? all[labels.indexOf(picked)] : undefined;
@@ -202,10 +203,11 @@ export default function (pi: ExtensionAPI) {
 				)
 				.catch(() => undefined);
 			const runs = checks(res?.stdout ?? "");
+			const name = label(url, pr);
 			if (runs.length === 0)
-				return ctx.ui.notify(`No checks on #${pr.number}`, "info");
+				return ctx.ui.notify(`No checks on ${name}`, "info");
 			const labels = runs.map((c) => checkLabel(c));
-			const picked = await ctx.ui.select(`Checks #${pr.number}`, labels);
+			const picked = await ctx.ui.select(`Checks ${name}`, labels);
 			const run = picked ? runs[labels.indexOf(picked)] : undefined;
 			if (run?.link) await open(run.link);
 		},
